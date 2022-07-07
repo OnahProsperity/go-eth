@@ -5,9 +5,11 @@ import (
 	"math/big"
 	"math"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/accounts/keystore"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"log"
 	"os"
+	"io/ioutil"
 	"context"
 	"fmt"
 	"github.com/joho/godotenv"
@@ -30,9 +32,10 @@ func goDotEnvVariable(key string) string {
   }
   
 func main() {
-	getBlockNumber()
-	getBalanceAtBlock()
-	generateETHAddress()
+	// getBlockNumber()
+	// getBalanceAtBlock()
+	// generateETHAddress()
+	genKeyStoreAddress()
 }
 
 func getBlockNumber() {
@@ -82,6 +85,33 @@ func generateETHAddress() {
 	publicKey := crypto.FromECDSA(privateKey)
 	fmt.Println("Here is your new private key: ", privateKey, "and your public key: ", hexutil.Encode(publicKey))
 	address := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+
+	fmt.Println("address: ", address)
+}
+
+func genKeyStoreAddress() {
+	// key := keystore.NewKeyStore("./wallet", keystore.StandardScryptN, keystore.StandardScryptP)
+	password := "pasword"
+	// theaddress, err := key.NewAccount(password)
+	// if err != nil {
+	// 	fmt.Println("error logged during connection:", err)
+	// }
+	// fmt.Println("address is: ", theaddress.Address)
+
+	b, err := ioutil.ReadFile("./wallet/UTC--2022-07-07T20-10-12.830532744Z--7540d57e5f17fa967183c405d3d56c5e6ab1502a")
+	if err != nil {
+		log.Print(err)
+	}
+	key, err := keystore.DecryptKey(b, password)
+	if err != nil {
+		log.Print(err)
+	}
+
+	publicData := crypto.FromECDSA(key.PrivateKey)
+	fmt.Println("the returned private data: ", hexutil.Encode(publicData))
+	publicData = crypto.FromECDSAPub(&key.PrivateKey.PublicKey)
+	fmt.Println("the returned public key", hexutil.Encode(publicData))
+	address := crypto.PubkeyToAddress(key.PrivateKey.PublicKey).Hex()
 
 	fmt.Println("address: ", address)
 }
