@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/ethereum/go-ethereum/crypto"
 	"math/big"
 	"math"
 	"github.com/ethereum/go-ethereum/common"
+	"github.com/ethereum/go-ethereum/common/hexutil"
 	"log"
 	"os"
 	"context"
@@ -30,6 +32,7 @@ func goDotEnvVariable(key string) string {
 func main() {
 	getBlockNumber()
 	getBalanceAtBlock()
+	generateETHAddress()
 }
 
 func getBlockNumber() {
@@ -49,15 +52,15 @@ func getBlockNumber() {
 }
 
 func getBalanceAtBlock() {
-	dotenv := goDotEnvVariable("INFURAURL")
-	client, err := ethclient.DialContext(ctx, dotenv)
+	infura := goDotEnvVariable("INFURAURL")
+	client, err := ethclient.DialContext(ctx, infura)
 	if err != nil {
 		fmt.Println("error logged during connection:", err)
 	}
 	// in other to avoid a memory lick
 	defer client.Close()
 
-	addr := "0xab3B229eB4BcFF881275E7EA2F0FD24eeaC8C83a"
+	addr := goDotEnvVariable("ADDRESS")
 	address := common.HexToAddress(addr)
 
 	balance, err := client.BalanceAt(ctx, address, nil)
@@ -69,4 +72,16 @@ func getBalanceAtBlock() {
 
 	value := new(big.Float).Quo(FBalance, big.NewFloat(math.Pow10(18)))
 	fmt.Println("Current user balance is: ", value)
+}
+
+func generateETHAddress() {
+	privateKey, err := crypto.GenerateKey()
+	if err != nil {
+		fmt.Println("error logged during connection:", err)
+	}
+	publicKey := crypto.FromECDSA(privateKey)
+	fmt.Println("Here is your new private key: ", privateKey, "and your public key: ", hexutil.Encode(publicKey))
+	address := crypto.PubkeyToAddress(privateKey.PublicKey).Hex()
+
+	fmt.Println("address: ", address)
 }
