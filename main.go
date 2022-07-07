@@ -1,17 +1,35 @@
 package main
 
 import (
+	"log"
+	"os"
 	"context"
 	"fmt"
-
+	"github.com/joho/godotenv"
 	"github.com/ethereum/go-ethereum/ethclient"
 )
 
-var infuraURL = "wss://mainnet.infura.io/ws/v3/5aa06cf6c9d54a79bc1ce4f8ca6cfa6d"
 
+// use godot package to load/read the .env file and
+// return the value of the key
+func goDotEnvVariable(key string) string {
+	// load .env file
+	// load .env file
+	err := godotenv.Load(".env")
+
+	if err != nil {
+		log.Fatalf("Error loading .env file")
+	}
+	return os.Getenv(key)
+  }
+  
 func main() {
-	// cxt := context.Background()
-	client, err := ethclient.DialContext(context.Background(), infuraURL)
+	getBlockNumber()
+}
+
+func getBlockNumber() {
+	dotenv := goDotEnvVariable("INFURAURL")
+	client, err := ethclient.DialContext(context.Background(), dotenv)
 	if err != nil {
 		fmt.Println("error logged during connection:", err)
 	}
@@ -22,5 +40,5 @@ func main() {
 	if err != nil {
 		fmt.Println("error attempting block num:", err)
 	}
-	fmt.Println(blockNum.Number())
+	fmt.Println("Current Block Number: ", blockNum.Number())
 }
